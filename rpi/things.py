@@ -5,7 +5,7 @@
     RPI:
     usage:
         python things.py --send померить и отослать температуру
-        python things.py --list показать список термометров
+        python things.py --list показать список термометров и температуры
 
     пример кода
     http://stackoverflow.com/questions/30889872/how-to-post-api-in-thingspeak-comusing-urllib-in-python
@@ -17,6 +17,12 @@ import glob
 import time
 import getopt, sys
 
+__device_table = {
+    '/sys/bus/w1/devices/./w1_slave': 'field1',
+    '/sys/bus/w1/devices/./w1_slave': 'field2',
+    '/sys/bus/w1/devices/./w1_slave': 'field3',
+    '/sys/bus/w1/devices/./w1_slave': 'field4'
+}
 
 def read_temp_raw(device_file):
     f = open(device_file, 'r')
@@ -40,6 +46,7 @@ def read_temp(dev):
         temp_string = lines[1][equals_pos + 2:]
         temp_c = float(temp_string) / 1000.0  # convert to Celsius
         return temp_c
+    return None
 
 
 def readAll(device_folders):
@@ -57,14 +64,20 @@ def readAll(device_folders):
     return res
 
 
-def sendTemp(val):
+def sendTemp(temps):
+    """
+    перекодировать температуры и послать их на thingspeak
+    :param temps:
+    :return:
+    """
     # chanId: 74111; field[1-4]:room1temp, hotWaterTemp, coldWaterTemp, tempOutside
     # http://184.106.153.149
-    params = urllib.urlencode({'key': 'IL6Q4TBCJGSA9CVF',
-                               'field1': '19',
-                               'field2': '43',
-                               'field3': '23',
-                               'field4': '-3'})
+    urlparams = {'key': 'IL6Q4TBCJGSA9CVF'}
+    for key, val in temps:
+        if key in __device_table and not (val is None):
+            urlparams[__device_table[key]] = val
+
+    params = urllib.urlencode(urlparams)
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
     conn = httplib.HTTPConnection("api.thingspeak.com:80")
     try:
@@ -100,7 +113,9 @@ if __name__ == '__main__':
         if o in ('-l', '--list'):
             base_dir = '/sys/bus/w1/devices/'  # point to the address
             device_folder = glob.glob(base_dir + '28*')  # find devices with address starting from 28*
-            print device_folder
+
+            for d in device_folder:
+                print("dev:%s temp:%d\n", d, read_temp(d))
         elif o in ('-s', '--send'):
             main()
         else:
