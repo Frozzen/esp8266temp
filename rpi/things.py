@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """
     получаем температуру c DS1802 и отправляем ее на thingspeak.com
-    RPI:
+
+    RPI: работаем на старом ядре 3.14.х ядро 4.х парит
     usage:
-        python things.py --send померить и отослать температуру
+        python things.py --send=AOSNEW2 померить и отослать температуру
         python things.py --list показать список термометров и температуры
 
     пример кода
@@ -19,6 +20,8 @@ import getopt, sys
 
 __1wire = '/sys/bus/w1/devices/'
 __1w_device = '/temperature'
+
+# массив для перекодировки устройство -> поле в thingspeak
 __device_table = {
     '28-0000054822f5': 'field1',
     '.': 'field2',
@@ -43,7 +46,7 @@ def read_temp(device_file):
         temp_string = lines[1][equals_pos + 2:]
         temp_c = float(temp_string) / 1000.0  # convert to Celsius
         return temp_c
-    return 9999
+    return None
 
 
 def readAll(device_folders):
@@ -60,13 +63,14 @@ def readAll(device_folders):
     return res
 
 
-def sendTemp(temps):
+def sendTemp(temps, key):
     """
     перекодировать температуры и послать их на thingspeak
-    :param temps:
+    :type temps: dict
+    :param key: thingspeak.com channel KEY
+    :param temps: dict устройство - температура
     :return:
     """
-    # chanId: 74111; field[1-4]:room1temp, hotWaterTemp, coldWaterTemp, tempOutside
     # http://184.106.153.149
     urlparams = {}
     for key in temps:
@@ -75,7 +79,7 @@ def sendTemp(temps):
             urlparams[__device_table[k]] = temps[key]
     if len(urlparams) == 0:
         return
-    urlparams['key'] = 'IL6Q4TBCJGSA9CVF'
+    urlparams['key'] = key
 
     params = urllib.urlencode(urlparams)
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
@@ -87,15 +91,15 @@ def sendTemp(temps):
             print response.status, response.reason
             data = response.read()
         conn.close()
-    except Exception as e:
+    except httplib.HTTPException as e:
         print "connection failed", e
 
 
-def main():
+def main(key):
     device_folder = glob.glob(__1wire + '28*')  # find devices with address starting from 28*
 
     res = readAll(device_folder)
-    sendTemp(res)
+    sendTemp(res, key)
 
 
 def usage():
@@ -105,7 +109,7 @@ def usage():
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'sl', ['send', 'list'])
+        opts, args = getopt.getopt(sys.argv[1:], 's:l', ['send=', 'list'])
     except getopt.GetoptError as error:
         print error
         usage()
@@ -117,6 +121,6 @@ if __name__ == '__main__':
                 t = read_temp(d)
                 print("dev:%s temp:%5.2f" % (d.split('/')[-1], t))
         elif o in ('-s', '--send'):
-            main()
+            main(a)
         else:
             usage()

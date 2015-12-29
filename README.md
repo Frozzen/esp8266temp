@@ -38,4 +38,12 @@ https://www.carluccio.de/1-wire-sensoren-am-raspberry-pi/
 
     sudo rpi-update f74b92120e0d469fc5c2dc85b2b5718d877e1cbb
 
+## использование
 
+посмотреть список устройств
+
+    python things.py --list
+
+послать данные по ключу
+
+    python things.py --send=APIKEY
