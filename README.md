@@ -10,3 +10,10 @@
     - период обновления
 - отправлять данные на thingspeak.com через WiFi router
 - измерять температуру в N точках
+
+Пишется на arduino IDE с библиотеками:
+
+http://esp8266.ru/arduino-ide-esp8266/ - IDE
+https://github.com/milesburton/Arduino-Temperature-Control-Library
+https://github.com/Links2004/arduinoWebSockets
+https://github.com/somhi/ESP_SSD1306
