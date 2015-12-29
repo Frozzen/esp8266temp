@@ -17,40 +17,33 @@ import glob
 import time
 import getopt, sys
 
-__1wire = '/mnt/1wire/'
+__1wire = '/sys/bus/w1/devices/'
 __1w_device = '/temperature'
 __device_table = {
-    '10.67C6697351FF': 'field1',
+    '28-0000054822f5': 'field1',
     '.': 'field2',
     '.': 'field3',
     '.': 'field4'
 }
 
 def read_temp_raw(device_file):
-    """
-
-    :type device_file: str folder to owfs device
-    :return:
-    """
-<<<<<<< HEAD
-    f = open(device_file+__1w_device, 'r')
-=======
-    f = open(device_file + __1w_device, 'r')
->>>>>>> c92e7de9402bc1583ceadf90ec4478ada638dca7
-    lines = f.read()  # read the device details
+    f = open(device_file, 'r')
+    lines = f.readlines()  # read the device details
     f.close()
     return lines
 
 
-def read_temp(dev):
-    """
-    прочитать температуру и конвертировать
-    :param dev:
-    :return:
-    """
-    temp_string = read_temp_raw(dev)
-    temp_c = float(temp_string.strip())  # convert to Celsius
-    return temp_c
+def read_temp(device_file):
+    lines = read_temp_raw(device_file + '/w1_slave')
+    while lines[0].strip()[-3:] != 'YES':  # ignore first line
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    equals_pos = lines[1].find('t=')  # find temperature in the details
+    if equals_pos != -1:
+        temp_string = lines[1][equals_pos + 2:]
+        temp_c = float(temp_string) / 1000.0  # convert to Celsius
+        return temp_c
+    return 9999
 
 
 def readAll(device_folders):
@@ -99,7 +92,7 @@ def sendTemp(temps):
 
 
 def main():
-    device_folder = glob.glob(__1wire + '10*')  # find devices with address starting from 28*
+    device_folder = glob.glob(__1wire + '28*')  # find devices with address starting from 28*
 
     res = readAll(device_folder)
     sendTemp(res)
@@ -118,8 +111,7 @@ if __name__ == '__main__':
         usage()
     for o, a in opts:
         if o in ('-l', '--list'):
-            base_dir = __1wire  # point to the address
-            device_folder = glob.glob(base_dir + '10*')  # find devices with address starting from 28*
+            device_folder = glob.glob(__1wire + '28*')  # find devices with address starting from 28*
             print("device attached:")
             for d in device_folder:
                 t = read_temp(d)
