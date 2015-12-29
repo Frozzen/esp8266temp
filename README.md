@@ -18,9 +18,18 @@ https://github.com/milesburton/Arduino-Temperature-Control-Library
 https://github.com/Links2004/arduinoWebSockets
 https://github.com/somhi/ESP_SSD1306
 
+<<<<<<< HEAD
 Пока запускаем на RPI
     - простой по реализации вариант
     /etc/rc.local
 	modprobe w1-gpio
 	modprobe w1-therm
     
+=======
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=27379&p=505250 - 1 wire RPi
+https://gist.github.com/kmpm/4445289
+https://www.carluccio.de/1-wire-sensoren-am-raspberry-pi/
+sudo apt-get install i2c-tools owfs ow-shell
+
+>>>>>>> c92e7de9402bc1583ceadf90ec4478ada638dca7

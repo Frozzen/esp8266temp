@@ -20,10 +20,10 @@ import getopt, sys
 __1wire = '/mnt/1wire/'
 __1w_device = '/temperature'
 __device_table = {
-    '.' : 'field1',
-    '.' : 'field2',
-    '.' : 'field3',
-    '.' : 'field4'
+    '10.67C6697351FF': 'field1',
+    '.': 'field2',
+    '.': 'field3',
+    '.': 'field4'
 }
 
 def read_temp_raw(device_file):
@@ -32,7 +32,11 @@ def read_temp_raw(device_file):
     :type device_file: str folder to owfs device
     :return:
     """
+<<<<<<< HEAD
     f = open(device_file+__1w_device, 'r')
+=======
+    f = open(device_file + __1w_device, 'r')
+>>>>>>> c92e7de9402bc1583ceadf90ec4478ada638dca7
     lines = f.read()  # read the device details
     f.close()
     return lines
@@ -45,7 +49,7 @@ def read_temp(dev):
     :return:
     """
     temp_string = read_temp_raw(dev)
-    temp_c = float(temp_string.strip())   # convert to Celsius
+    temp_c = float(temp_string.strip())  # convert to Celsius
     return temp_c
 
 
@@ -86,8 +90,9 @@ def sendTemp(temps):
     try:
         conn.request("POST", "/update", params, headers)
         response = conn.getresponse()
-        print response.status, response.reason
-        data = response.read()
+        if response.status != 200:
+            print response.status, response.reason
+            data = response.read()
         conn.close()
     except Exception as e:
         print "connection failed", e
@@ -118,7 +123,7 @@ if __name__ == '__main__':
             print("device attached:")
             for d in device_folder:
                 t = read_temp(d)
-                print("dev:%s temp:%5.2f\n" % (d.split('/')[-1], t))
+                print("dev:%s temp:%5.2f" % (d.split('/')[-1], t))
         elif o in ('-s', '--send'):
             main()
         else:
