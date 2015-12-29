@@ -17,16 +17,23 @@ import glob
 import time
 import getopt, sys
 
+__1wire = '/mnt/1wire/'
+__1w_device = '/temperature'
 __device_table = {
-    '/sys/bus/w1/devices/./w1_slave': 'field1',
-    '/sys/bus/w1/devices/./w1_slave': 'field2',
-    '/sys/bus/w1/devices/./w1_slave': 'field3',
-    '/sys/bus/w1/devices/./w1_slave': 'field4'
+    '.' : 'field1',
+    '.' : 'field2',
+    '.' : 'field3',
+    '.' : 'field4'
 }
 
 def read_temp_raw(device_file):
-    f = open(device_file, 'r')
-    lines = f.readlines()  # read the device details
+    """
+
+    :type device_file: str folder to owfs device
+    :return:
+    """
+    f = open(device_file+__1w_device, 'r')
+    lines = f.read()  # read the device details
     f.close()
     return lines
 
@@ -37,16 +44,9 @@ def read_temp(dev):
     :param dev:
     :return:
     """
-    lines = read_temp_raw(dev)
-    while lines[0].strip()[-3:] != 'YES':  # ignore first line
-        time.sleep(0.2)
-        lines = read_temp_raw(dev)
-    equals_pos = lines[1].find('t=')  # find temperature in the details
-    if equals_pos != -1:
-        temp_string = lines[1][equals_pos + 2:]
-        temp_c = float(temp_string) / 1000.0  # convert to Celsius
-        return temp_c
-    return None
+    temp_string = read_temp_raw(dev)
+    temp_c = float(temp_string.strip())   # convert to Celsius
+    return temp_c
 
 
 def readAll(device_folders):
@@ -59,8 +59,7 @@ def readAll(device_folders):
     """
     res = {}
     for device_folder in device_folders:
-        device_file = device_folder + '/w1_slave'  # store the details
-        res[device_folder] = read_temp_raw(device_file)
+        res[device_folder] = read_temp(device_folder)
     return res
 
 
@@ -72,14 +71,18 @@ def sendTemp(temps):
     """
     # chanId: 74111; field[1-4]:room1temp, hotWaterTemp, coldWaterTemp, tempOutside
     # http://184.106.153.149
-    urlparams = {'key': 'IL6Q4TBCJGSA9CVF'}
-    for key, val in temps:
-        if key in __device_table and not (val is None):
-            urlparams[__device_table[key]] = val
+    urlparams = {}
+    for key in temps:
+        k = key.split('/')[-1]
+        if k in __device_table and not (temps[key] is None):
+            urlparams[__device_table[k]] = temps[key]
+    if len(urlparams) == 0:
+        return
+    urlparams['key'] = 'IL6Q4TBCJGSA9CVF'
 
     params = urllib.urlencode(urlparams)
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-    conn = httplib.HTTPConnection("api.thingspeak.com:80")
+    conn = httplib.HTTPConnection("184.106.153.149:80")
     try:
         conn.request("POST", "/update", params, headers)
         response = conn.getresponse()
@@ -91,8 +94,7 @@ def sendTemp(temps):
 
 
 def main():
-    base_dir = '/sys/bus/w1/devices/'  # point to the address
-    device_folder = glob.glob(base_dir + '28*')  # find devices with address starting from 28*
+    device_folder = glob.glob(__1wire + '10*')  # find devices with address starting from 28*
 
     res = readAll(device_folder)
     sendTemp(res)
@@ -111,11 +113,12 @@ if __name__ == '__main__':
         usage()
     for o, a in opts:
         if o in ('-l', '--list'):
-            base_dir = '/sys/bus/w1/devices/'  # point to the address
-            device_folder = glob.glob(base_dir + '28*')  # find devices with address starting from 28*
-
+            base_dir = __1wire  # point to the address
+            device_folder = glob.glob(base_dir + '10*')  # find devices with address starting from 28*
+            print("device attached:")
             for d in device_folder:
-                print("dev:%s temp:%d\n", d, read_temp(d))
+                t = read_temp(d)
+                print("dev:%s temp:%5.2f\n" % (d.split('/')[-1], t))
         elif o in ('-s', '--send'):
             main()
         else:
