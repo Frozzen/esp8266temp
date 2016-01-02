@@ -41,13 +41,25 @@ https://www.carluccio.de/1-wire-sensoren-am-raspberry-pi/
     
 ## настройка связи
 
+    11	GPIO0	SIM900-PWERKEY	Powering-on key via software
+    12	GPIO1	SIM900-RST	Resetting key via software
+    
+    >>> import RPi.GPIO as GPIO
+    GPIO.setmode(GPIO.BCM)
+    >>> GPIO.setup(18, GPIO.OUT)
+    >>> GPIO.output(18, False)
+
 ни один вариант пока не пошел! WiFi не надежен - может вырубиться, потом его надо включать руками, USB сбои.
+
+http://wiki.iteadstudio.com/RPI_SIM900_GSM/GPRS_ADD-ON_V1.0 
 
 http://trustoff.ru/razblokirovka-routerov-huawei-e5830-e5832-e5832S-e585-e5838-besplatno
 
 http://4pda.ru/forum/index.php?showtopic=254811&st=0#entry8361673
 
     https://www.thefanclub.co.za/how-to/how-setup-usb-3g-modem-raspberry-pi-using-usbmodeswitch-and-wvdial
+    
+    
     http://pastebin.com/EnurgyAC
    sudo apt-get install ppp usb-modeswitch wvdial
 
