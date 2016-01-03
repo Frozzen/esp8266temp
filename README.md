@@ -44,10 +44,12 @@ https://www.carluccio.de/1-wire-sensoren-am-raspberry-pi/
     11	GPIO0	SIM900-PWERKEY	Powering-on key via software
     12	GPIO1	SIM900-RST	Resetting key via software
     
-    >>> import RPi.GPIO as GPIO
+    import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
-    >>> GPIO.setup(18, GPIO.OUT)
-    >>> GPIO.output(18, False)
+    GPIO.setup(11, GPIO.OUT)
+    GPIO.output(11, GPIO.HIHG)
+    GPIO.setup(12, GPIO.OUT)
+    GPIO.output(12, GPIO.HIHG)
 
 ни один вариант пока не пошел! WiFi не надежен - может вырубиться, потом его надо включать руками, USB сбои.
 
