@@ -43,6 +43,11 @@ https://www.carluccio.de/1-wire-sensoren-am-raspberry-pi/
 
     11	GPIO0	SIM900-PWERKEY	Powering-on key via software
     12	GPIO1	SIM900-RST	Resetting key via software
+
+### gpio    
+    http://geektimes.ru/post/255050/
+    
+    rpio-curses
     
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
