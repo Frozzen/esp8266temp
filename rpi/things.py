@@ -24,7 +24,7 @@ __1w_device = '/temperature'
 # массив для перекодировки устройство -> поле в thingspeak
 __device_table = {
     '28-0000054822f5': 'field1',
-    '.': 'field2',
+    '28-000005482a81': 'field2',
     '.': 'field3',
     '.': 'field4'
 }
@@ -63,7 +63,7 @@ def readAll(device_folders):
     return res
 
 
-def sendTemp(temps, key):
+def sendTemp(temps, tkey):
     """
     перекодировать температуры и послать их на thingspeak
     :type temps: dict
@@ -79,7 +79,7 @@ def sendTemp(temps, key):
             urlparams[__device_table[k]] = temps[key]
     if len(urlparams) == 0:
         return
-    urlparams['key'] = key
+    urlparams['key'] = tkey
 
     params = urllib.urlencode(urlparams)
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
