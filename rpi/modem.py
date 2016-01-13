@@ -2,7 +2,14 @@
 from RPi import GPIO
 from time import sleep
 import sys, os
+import serial
 
+ser = serial.Serial(port='/dev/ttyAMA0', baudrate=115200, timeout=1)
+ser.write("atz\r")
+sleep(0.2)
+d = ser.read()
+if d == 'OK':
+    return
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(17, GPIO.OUT, initial=GPIO.LOW) 	# modem PWR
