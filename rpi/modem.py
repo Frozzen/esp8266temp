@@ -3,7 +3,7 @@
 включить кодем через GPIO
 
 ключи
-    --on - принудительно включить
+    --on - принудительно включить/выключить
     --test проверит что модем работает
     --check проверить и включить если не работает
 """
@@ -50,13 +50,14 @@ def do_test_modem(ser):
     # режим показывать соту где зарегистрирован
     ser.write("at+creg=2\r")
     d = ser.read(100)
-    if d.index('OK') < 0:
-        return None
+    try:
+        d.index('OK') 
 
-    ser.write("at+creg?\r")
-    d = ser.read(100)
-    if d.index('OK') < 0:
-        return None
+        ser.write("at+creg?\r")
+	d = ser.read(100)
+        d.index('OK')
+    except ValueError:
+	return None
     s = d.split('\r')[2][1:]
     return s
 
@@ -90,6 +91,7 @@ def do_check(ser):
         r, msg = wait_signal(ser)
         if r == False:
             print msg
+	    sleep(10)
             do_reset(ser)
         else:
             return msg
